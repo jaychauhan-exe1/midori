@@ -1,31 +1,31 @@
 import { Globe } from "lucide-react";
-import words from "./data/words/english/common.json";
+import words from "@/data/words/english/common.json";
+import { Letter } from "@/components/typing/Letter";
+
+
 export default function Home() {
-  const randomIndex = Math.floor(Math.random() * words.commonWords.length);
-  let paragraph = [];
-  for (let i = 0; i < 40; i++) {
-    const word =
-      words.commonWords[Math.floor(Math.random() * words.commonWords.length)];
-    paragraph.push(word);
-  }
-  console.log(paragraph);
+  const paragraph = Array.from({ length: 30 }, () =>
+    words.commonWords[Math.floor(Math.random() * words.commonWords.length)]
+  );
+
   return (
     <main className="flex min-h-screen p-4 max-w-4xl mx-auto">
-      <div className="flex flex-col items-center justify-center w-full gap-8">
-        <h1 className="text-4xl font-bold">Midori Type</h1>
-        <h4 className="flex items-center justify-between gap-2 uppercase text-sm">
-          <Globe size={12} /> English
+      <div className="flex flex-col items-center justify-center w-full gap-6">
+        <h1 className="text-4xl font-bold">Midori</h1>
+
+        <h4 className="flex items-center gap-2 text-sm uppercase">
+          <Globe size={14} /> English
         </h4>
         <div className="flex flex-wrap gap-2">
-          {paragraph.map((word, index) => (
-            <span
-              key={index}
-              className="text-lg tracking-widest text-foreground/40 "
-            >
-              {word + " "}
-            </span>
+          {paragraph.map((word, i) => (
+            <div key={i} className="flex text-2xl">
+              {word.split("").map((char, j) => (
+                <Letter key={j} char={char} />
+              ))}
+            </div>
           ))}
         </div>
+
       </div>
     </main>
   );
