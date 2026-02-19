@@ -1,5 +1,5 @@
 import { memo } from "react";
-import type { LetterProps } from "@/types/typing";
+import type { LetterProps } from "@/src/types/typing";
 
 export const Letter = memo(({ char, typedChar, missed }: LetterProps) => {
     let color = "text-foreground/30";
