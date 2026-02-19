@@ -4,6 +4,12 @@ export function useTimer(initialTime: number, onTimeUp: () => void) {
   const [timeLeft, setTimeLeft] = useState(initialTime);
   const [isActive, setIsActive] = useState(false);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const onTimeUpRef = useRef(onTimeUp);
+
+  // Keep onTimeUp fresh without triggering useEffect
+  useEffect(() => {
+    onTimeUpRef.current = onTimeUp;
+  }, [onTimeUp]);
 
   const startTimer = useCallback(() => setIsActive(true), []);
   const stopTimer = useCallback(() => setIsActive(false), []);
@@ -14,18 +20,26 @@ export function useTimer(initialTime: number, onTimeUp: () => void) {
   }, []);
 
   useEffect(() => {
-    if (isActive && timeLeft > 0) {
+    if (isActive) {
       timerRef.current = setInterval(() => {
-        setTimeLeft((prev) => prev - 1);
+        setTimeLeft((prev) => {
+          if (prev <= 1) {
+            if (timerRef.current) clearInterval(timerRef.current);
+            setIsActive(false);
+            onTimeUpRef.current();
+            return 0;
+          }
+          return prev - 1;
+        });
       }, 1000);
-    } else if (timeLeft === 0 && isActive) {
-      setIsActive(false);
-      onTimeUp();
+    } else {
+      if (timerRef.current) clearInterval(timerRef.current);
     }
+
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
     };
-  }, [isActive, timeLeft, onTimeUp]);
+  }, [isActive]);
 
   return { timeLeft, isActive, startTimer, stopTimer, resetTimer };
 }

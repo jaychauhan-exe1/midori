@@ -32,20 +32,22 @@ export default function Home() {
   const [isTyping, setIsTyping] = useState(false);
   const [lastRecording, setLastRecording] = useState<RecordingPoint[]>([]);
 
-  const { userInput, history, activeWordIndex, handleInput, resetTyping } = useTyping();
+  const { userInput, history, activeWordIndex, handleInput, resetTyping, setHistory, setActiveWordIndex, setUserInput } = useTyping();
 
   const onTimeUp = useCallback(() => {
     const stats = calculateSessionResults(words, history, userInput, timeLimit);
     setResults(stats);
     setMode("results");
+    setIsTyping(false);
   }, [words, history, userInput, timeLimit]);
 
-  const { timeLeft, startTimer, resetTimer, isActive } = useTimer(timeLimit, onTimeUp);
+  const { timeLeft, startTimer, resetTimer, stopTimer, isActive } = useTimer(timeLimit, onTimeUp);
 
   const activeWordRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const startTimestampRef = useRef<number | null>(null);
   const recordingBufferRef = useRef<RecordingPoint[]>([]);
+  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const initTest = useCallback((limit: number, sameWords?: string[]) => {
     setWords(sameWords || generateWordsList(getWordCountForLimit(limit)));
@@ -53,12 +55,24 @@ export default function Home() {
     resetTimer(limit);
     setMode("typing");
     setContainerOffset(0);
+    setIsTyping(false);
     recordingBufferRef.current = [];
     startTimestampRef.current = null;
     setTimeout(() => textareaRef.current?.focus(), 0);
   }, [resetTyping, resetTimer]);
 
   useEffect(() => initTest(timeLimit), [timeLimit, initTest]);
+
+  // Handle backspace between words
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Backspace" && userInput === "" && activeWordIndex > 0) {
+      e.preventDefault();
+      const prev = history[history.length - 1];
+      setHistory(prevHistory => prevHistory.slice(0, -1));
+      setActiveWordIndex(prevIndex => prevIndex - 1);
+      setUserInput(prev);
+    }
+  };
 
   // Caret and Scroll Logic
   useEffect(() => {
@@ -76,6 +90,15 @@ export default function Home() {
       recordingBufferRef.current.push({ t: elapsed, x: pos.left, y: pos.top, h: pos.height });
     }
   }, [userInput, activeWordIndex, isActive]);
+
+  // Typing indicator for caret blink
+  useEffect(() => {
+    if (userInput.length > 0 || history.length > 0) {
+      setIsTyping(true);
+      if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+      typingTimeoutRef.current = setTimeout(() => setIsTyping(false), 500);
+    }
+  }, [userInput, history.length]);
 
   return (
     <main className="flex min-h-screen p-4 max-w-6xl mx-auto font-jetbrains-mono bg-background text-foreground">
@@ -99,15 +122,19 @@ export default function Home() {
                   }
                   handleInput(e.target.value);
                 }}
+                onKeyDown={handleKeyDown}
                 onFocus={() => setIsFocused(true)}
-                onBlur={() => setIsFocused(false)}
+                onBlur={() => {
+                  setIsFocused(false);
+                  stopTimer(); // Pause timer on blur
+                }}
                 autoFocus
               />
               <div
-                style={{ transform: `translateY(${containerOffset}px)`, transition: 'transform 0.2s ease' }}
-                className="flex flex-wrap gap-x-4 gap-y-3 relative"
+                style={{ transform: `translateY(${containerOffset}px)`, transition: 'transform 0.2s cubic-bezier(0.4, 0, 0.2, 1)' }}
+                className={`flex flex-wrap gap-x-4 gap-y-3 relative transition-all duration-300 ${!isFocused && !isActive ? "blur-sm opacity-50" : ""}`}
               >
-                <Caret position={caretPos} isTyping={userInput.length > 0} />
+                <Caret position={caretPos} isTyping={isTyping} />
                 {words.map((w, i) => (
                   <Word
                     key={i}
@@ -119,6 +146,11 @@ export default function Home() {
                   />
                 ))}
               </div>
+              {!isFocused && !isActive && (
+                <div className="absolute inset-0 z-30 flex items-center justify-center text-foreground/60 text-sm animate-pulse">
+                  Click to focus
+                </div>
+              )}
             </div>
           </div>
         )}
