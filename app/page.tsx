@@ -16,7 +16,7 @@ export default function Home() {
         <h4 className="flex items-center gap-2 text-sm uppercase">
           <Globe size={14} /> English
         </h4>
-        <div className="flex flex-wrap gap-2 h-[120px] overflow-y-hidden">
+        <div className="type flex flex-wrap gap-2 h-[120px] overflow-y-hidden">
           {paragraph.map((word, i) => (
             <div key={i} className="flex text-2xl">
               {word.split("").map((char, j) => (
