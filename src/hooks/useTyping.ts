@@ -7,9 +7,11 @@ export function useTyping() {
 
   const handleInput = useCallback(
     (value: string) => {
+      // Prevent long strings without spaces
+      if (value.length > 20 && !value.endsWith(" ")) return;
+
       if (value.endsWith(" ")) {
         if (userInput.length > 0) {
-          // Space pressed: Save current word to history and reset input
           setHistory((prev) => [...prev, userInput]);
           setActiveWordIndex((prev) => prev + 1);
           setUserInput("");
@@ -21,5 +23,20 @@ export function useTyping() {
     [userInput],
   );
 
-  return { userInput, history, activeWordIndex, handleInput };
+  const resetTyping = useCallback(() => {
+    setActiveWordIndex(0);
+    setHistory([]);
+    setUserInput("");
+  }, []);
+
+  return {
+    userInput,
+    history,
+    activeWordIndex,
+    setUserInput,
+    handleInput,
+    resetTyping,
+    setHistory,
+    setActiveWordIndex,
+  };
 }
