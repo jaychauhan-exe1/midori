@@ -25,7 +25,7 @@ export default function Home() {
   const [words, setWords] = useState<string[]>([]);
   const [results, setResults] = useState<TestStats | null>(null);
 
-  const [caretPos, setCaretPos] = useState({ top: 0, left: 0, height: 0 });
+  const [caretPos, setCaretPos] = useState({ top: 0, left: 0, height: 24 });
   const [ghostCaretPos, setGhostCaretPos] = useState<GhostCaretPosition>({ top: 0, left: 0, height: 0, visible: false });
   const [containerOffset, setContainerOffset] = useState(0);
   const [isFocused, setIsFocused] = useState(true);
@@ -75,21 +75,27 @@ export default function Home() {
   };
 
   // Caret and Scroll Logic
-  useEffect(() => {
-    const pos = getCaretPosition(activeWordRef.current, userInput.length);
-    setCaretPos(pos);
-
+  const updateCaret = useCallback(() => {
     if (activeWordRef.current) {
+      const pos = getCaretPosition(activeWordRef.current, userInput.length);
+      setCaretPos(pos);
+
       const top = activeWordRef.current.offsetTop;
       if (top >= 52 * 2) setContainerOffset(-(top - 52));
       else setContainerOffset(0);
-    }
 
-    if (isActive) {
-      const elapsed = performance.now() - (startTimestampRef.current || performance.now());
-      recordingBufferRef.current.push({ t: elapsed, x: pos.left, y: pos.top, h: pos.height });
+      if (isActive) {
+        const elapsed = performance.now() - (startTimestampRef.current || performance.now());
+        recordingBufferRef.current.push({ t: elapsed, x: pos.left, y: pos.top, h: pos.height });
+      }
     }
   }, [userInput, activeWordIndex, isActive]);
+
+  useEffect(() => {
+    // Small delay ensures the DOM has updated refs
+    const timeout = setTimeout(updateCaret, 0);
+    return () => clearTimeout(timeout);
+  }, [userInput, activeWordIndex, isActive, words, isFocused, updateCaret]);
 
   // Typing indicator for caret blink
   useEffect(() => {
