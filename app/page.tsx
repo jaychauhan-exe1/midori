@@ -1,31 +1,51 @@
-import { Globe } from "lucide-react";
-import words from "@/data/words/english/common.json";
-import { Letter } from "@/components/typing/Letter";
-
+"use client";
+import { useMemo, useState, useEffect, useRef } from "react";
+import wordsData from "@/data/words/english/common.json";
+import { Word } from "@/src/components/typing/Word";
+import { useTyping } from "@/src/hooks/useTyping";
 
 export default function Home() {
-  const paragraph = Array.from({ length: 100 }, () =>
-    words.commonWords[Math.floor(Math.random() * words.commonWords.length)]
-  );
+  const { userInput, history, activeWordIndex, handleInput } = useTyping();
+  const [paragraph, setParagraph] = useState<string[]>([]);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
+
+  // Generate words only on the client to avoid hydration mismatch
+  useEffect(() => {
+    const generated = Array.from({ length: 50 }, () =>
+      wordsData.commonWords[Math.round(Math.random() * (wordsData.commonWords.length - 1))]
+    );
+    setParagraph(generated);
+  }, []);
+
+  // Ensure the input is focused when clicking anywhere on the screen
+  const handleContainerClick = () => {
+    inputRef.current?.focus();
+  };
 
   return (
-    <main className="flex min-h-screen p-4 max-w-6xl mx-auto">
-      <div className="flex flex-col items-center justify-center w-full gap-6">
-        <h1 className="text-4xl font-bold">Midori</h1>
-
-        <h4 className="flex items-center gap-2 text-sm uppercase">
-          <Globe size={14} /> English
-        </h4>
-        <div className="type flex flex-wrap gap-2 h-[120px] overflow-y-hidden">
+    <main
+      className="flex min-h-screen p-8 max-w-4xl mx-auto font-mono cursor-text"
+      onClick={handleContainerClick}
+    >
+      <div className="h-[120px] overflow-y-hidden">
+        <div className="flex flex-wrap gap-x-4 gap-y-2">
           {paragraph.map((word, i) => (
-            <div key={i} className="flex text-2xl">
-              {word.split("").map((char, j) => (
-                <Letter key={j} char={char} />
-              ))}
-            </div>
+            <Word
+              key={i}
+              word={word}
+              active={i === activeWordIndex}
+              typed={i === activeWordIndex ? userInput : (history[i] || "")}
+              isFinished={i < activeWordIndex}
+            />
           ))}
         </div>
-
+        <textarea
+          ref={inputRef}
+          autoFocus
+          value={userInput}
+          onChange={(e) => handleInput(e.target.value)}
+          className="absolute opacity-0 pointer-events-none"
+        />
       </div>
     </main>
   );
