@@ -1,26 +1,35 @@
-import { memo } from "react";
+import { memo, useMemo } from "react";
 import { Letter } from "./Letter";
 import type { WordProps } from "@/src/types/typing";
 
-export const Word = memo(({ word, typed, active, isFinished }: WordProps) => {
-    const letters = word.split("");
-    const extraChars = typed.length > word.length ? typed.slice(word.length).split("") : [];
+export const Word = memo(({ word, typed, active, wordRef, isFinished }: WordProps) => {
+    const letters = useMemo(() => word.split(""), [word]);
+    const extraChars = useMemo(() => {
+        if (typed.length > word.length) {
+            return typed.slice(word.length).split("");
+        }
+        return [];
+    }, [typed, word.length]);
 
     return (
-        <div className="text-white!">
-            <div className={`word flex text-2xl h-10 ${active ? "" : "text-foreground"}`}>
-                {letters.map((char, i) => (
-                    <Letter
-                        key={i}
-                        char={char}
-                        typedChar={typed[i]}
-                        missed={isFinished && typed.length <= i}
-                    />
-                ))}
-                {extraChars.map((char, i) => (
-                    <span key={i} className="text-red-500 opacity-80">{char}</span>
-                ))}
-            </div>
+        <div
+            ref={wordRef}
+            className={`word relative flex text-2xl h-10 transition-opacity duration-200 ${active ? "text-foreground" : "text-foreground/30"
+                }`}
+        >
+            {letters.map((char, i) => (
+                <Letter
+                    key={i}
+                    char={char}
+                    typedChar={typed[i]}
+                    missed={isFinished && typed.length <= i}
+                />
+            ))}
+            {extraChars.map((char, i) => (
+                <span key={i} className="extra text-red-700 opacity-80 transition-colors duration-75">
+                    {char}
+                </span>
+            ))}
         </div>
     );
 });
