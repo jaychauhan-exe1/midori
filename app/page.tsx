@@ -4,12 +4,12 @@ import { Letter } from "@/components/typing/Letter";
 
 
 export default function Home() {
-  const paragraph = Array.from({ length: 30 }, () =>
+  const paragraph = Array.from({ length: 100 }, () =>
     words.commonWords[Math.floor(Math.random() * words.commonWords.length)]
   );
 
   return (
-    <main className="flex min-h-screen p-4 max-w-4xl mx-auto">
+    <main className="flex min-h-screen p-4 max-w-6xl mx-auto">
       <div className="flex flex-col items-center justify-center w-full gap-6">
         <h1 className="text-4xl font-bold">Midori</h1>
 
