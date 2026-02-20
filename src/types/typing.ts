@@ -13,6 +13,7 @@ export interface LetterProps {
   char: string;
   typedChar?: string;
   missed?: boolean;
+  isCurrentWord?: boolean;
 }
 
 export interface WordProps {
@@ -41,3 +42,4 @@ export interface RecordingPoint {
 }
 
 export type Mode = "typing" | "results";
+export type CursorType = "line" | "block" | "box" | "underline";

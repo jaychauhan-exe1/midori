@@ -1,9 +1,9 @@
 @import "tailwindcss";
 
 :root {
-  --background: #F5F7F2;
-  --foreground: #2D352D;
-  --primary: #8DB600;
+  --background: #f5f7f2;
+  --foreground: #2d352d;
+  --primary: #8db600;
 }
 
 @theme inline {
@@ -16,14 +16,13 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #1A1D1A;
-    --foreground: #D1D5D1;
-    --primary: #8DB600;
+    --background: #1a1d1a;
+    --foreground: #d1d5d1;
+    --primary: #8db600;
   }
 }
 
 @keyframes caret-blink {
-
   0%,
   100% {
     opacity: 1;
@@ -40,6 +39,22 @@
 
 .ghost-caret {
   transition: all 0.3s linear;
+}
+
+.typing-glow {
+  text-shadow: 0 0 8px rgba(141, 182, 0, 0.35), 0 0 16px rgba(141, 182, 0, 0.15);
+}
+
+.error-glow {
+  text-shadow: 0 0 8px rgba(239, 68, 68, 0.35), 0 0 16px rgba(239, 68, 68, 0.15);
+}
+
+.success-glow {
+  text-shadow: 0 0 8px rgba(209, 213, 209, 0.2), 0 0 16px rgba(209, 213, 209, 0.1);
+}
+
+.letter, .word {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
 }
 
 body {

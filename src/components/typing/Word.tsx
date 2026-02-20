@@ -14,7 +14,7 @@ export const Word = memo(({ word, typed, active, wordRef, isFinished }: WordProp
     return (
         <div
             ref={wordRef}
-            className={`word relative flex text-2xl h-10 transition-opacity duration-200 ${active ? "text-foreground" : "text-foreground/30"
+            className={`word relative flex transition-all duration-300 ease-in-out ${active ? "text-foreground" : "text-foreground/30"
                 }`}
         >
             {letters.map((char, i) => (
@@ -23,6 +23,7 @@ export const Word = memo(({ word, typed, active, wordRef, isFinished }: WordProp
                     char={char}
                     typedChar={typed[i]}
                     missed={isFinished && typed.length <= i}
+                    isCurrentWord={active}
                 />
             ))}
             {extraChars.map((char, i) => (
