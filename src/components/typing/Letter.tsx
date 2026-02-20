@@ -1,7 +1,7 @@
 import { memo } from "react";
 import type { LetterProps } from "@/src/types/typing";
 
-export const Letter = memo(({ char, typedChar, missed }: LetterProps) => {
+export const Letter = memo(({ char, typedChar, missed, isCurrentWord }: LetterProps) => {
     let color = "text-foreground/30";
     let decoration = "";
 
@@ -9,7 +9,11 @@ export const Letter = memo(({ char, typedChar, missed }: LetterProps) => {
         color = "text-red-500/60";
         decoration = "underline decoration-red-500/50 underline-offset-4";
     } else if (typedChar !== undefined) {
-        color = typedChar === char ? "text-foreground" : "text-red-500";
+        if (typedChar === char) {
+            color = isCurrentWord ? "text-primary" : "text-foreground";
+        } else {
+            color = "text-red-500";
+        }
     }
 
     return (

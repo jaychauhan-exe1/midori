@@ -6,14 +6,12 @@ import { useTyping } from "@/src/hooks/useTyping";
 import { useTimer } from "@/src/hooks/useTimer";
 import { useGhostCaret } from "@/src/hooks/useGhostCaret";
 
-// Components
 import { Word } from "@/src/components/typing/Word";
 import { Results } from "@/src/components/typing/Results";
 import { Caret } from "@/src/components/typing/Caret";
 import { GhostCaret } from "@/src/components/typing/GhostCaret";
 import { Timer } from "@/src/components/typing/Timer";
 
-// Libs/Utils
 import { generateWordsList } from "@/src/lib/generateWords";
 import { calculateSessionResults } from "@/src/lib/calculateResults";
 import { getCaretPosition } from "@/src/lib/caretPosition";

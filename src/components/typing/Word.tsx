@@ -23,6 +23,7 @@ export const Word = memo(({ word, typed, active, wordRef, isFinished }: WordProp
                     char={char}
                     typedChar={typed[i]}
                     missed={isFinished && typed.length <= i}
+                    isCurrentWord={active}
                 />
             ))}
             {extraChars.map((char, i) => (

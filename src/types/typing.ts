@@ -13,6 +13,7 @@ export interface LetterProps {
   char: string;
   typedChar?: string;
   missed?: boolean;
+  isCurrentWord?: boolean;
 }
 
 export interface WordProps {
