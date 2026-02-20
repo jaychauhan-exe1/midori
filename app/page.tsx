@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useRef, useState, useEffect, useCallback } from "react";
+import { RotateCcw, ChevronRight } from "lucide-react";
 import { useTyping } from "@/src/hooks/useTyping";
 import { useTimer } from "@/src/hooks/useTimer";
 
@@ -109,7 +110,25 @@ export default function Home() {
   return (
     <main className="flex min-h-screen p-4 max-w-6xl mx-auto font-jetbrains-mono bg-background text-foreground">
       <div className="flex flex-col items-center justify-center w-full gap-8 relative py-8">
-        <h1 className="text-2xl font-black text-primary">midori.ty</h1>
+        <div className="flex items-center justify-between w-full max-w-4xl px-4">
+          <h1 className="text-2xl font-black text-primary">midori.ty</h1>
+          {mode === "typing" && (
+            <div className="flex items-center gap-2 bg-foreground/5 p-1 rounded-lg">
+              {[15, 30, 60, 120].map((t) => (
+                <button
+                  key={t}
+                  onClick={() => setTimeLimit(t)}
+                  className={`px-3 py-1 rounded-md text-xs font-bold transition-all ${timeLimit === t
+                    ? "bg-primary text-background"
+                    : "text-foreground/40 hover:text-foreground"
+                    }`}
+                >
+                  {t}s
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
 
         {mode === "results" && results ? (
           <Results stats={results} onRestart={() => initTest(timeLimit, words)} onNext={() => initTest(timeLimit)} />
@@ -132,7 +151,7 @@ export default function Home() {
                 onFocus={() => setIsFocused(true)}
                 onBlur={() => {
                   setIsFocused(false);
-                  stopTimer(); // Pause timer on blur
+                  stopTimer();
                 }}
                 autoFocus
               />
@@ -158,6 +177,25 @@ export default function Home() {
                 </div>
               )}
             </div>
+          </div>
+        )}
+
+        {mode === "typing" && (
+          <div className="flex gap-4">
+            <button
+              onClick={() => initTest(timeLimit, words)}
+              className="p-4 rounded-full hover:bg-foreground/10 active:scale-95 transition-all text-foreground/30 hover:text-foreground"
+              aria-label="Restart Same Test"
+            >
+              <RotateCcw size={22} />
+            </button>
+            <button
+              onClick={() => initTest(timeLimit)}
+              className="p-4 rounded-full hover:bg-foreground/10 active:scale-95 transition-all text-foreground/30 hover:text-foreground"
+              aria-label="Next Test"
+            >
+              <ChevronRight size={22} />
+            </button>
           </div>
         )}
       </div>
