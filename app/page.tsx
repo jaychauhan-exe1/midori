@@ -4,6 +4,7 @@ import React, { useRef, useState, useEffect, useCallback } from "react";
 import { RotateCcw, ChevronRight } from "lucide-react";
 import { useTyping } from "@/src/hooks/useTyping";
 import { useTimer } from "@/src/hooks/useTimer";
+import { useGhostCaret } from "@/src/hooks/useGhostCaret";
 
 // Components
 import { Word } from "@/src/components/typing/Word";
@@ -16,9 +17,8 @@ import { Timer } from "@/src/components/typing/Timer";
 import { generateWordsList } from "@/src/lib/generateWords";
 import { calculateSessionResults } from "@/src/lib/calculateResults";
 import { getCaretPosition } from "@/src/lib/caretPosition";
-import { calculateGhostPosition } from "@/src/lib/ghostPlayback";
 import { getWordCountForLimit } from "@/src/utils/wordHelper";
-import type { TestStats, RecordingPoint, GhostCaretPosition } from "@/src/types/typing";
+import type { TestStats } from "@/src/types/typing";
 
 export default function Home() {
   const [mode, setMode] = useState<"typing" | "results">("typing");
@@ -27,27 +27,38 @@ export default function Home() {
   const [results, setResults] = useState<TestStats | null>(null);
 
   const [caretPos, setCaretPos] = useState({ top: 0, left: 0, height: 24 });
-  const [ghostCaretPos, setGhostCaretPos] = useState<GhostCaretPosition>({ top: 0, left: 0, height: 0, visible: false });
   const [containerOffset, setContainerOffset] = useState(0);
   const [isFocused, setIsFocused] = useState(true);
   const [isTyping, setIsTyping] = useState(false);
-  const [lastRecording, setLastRecording] = useState<RecordingPoint[]>([]);
 
   const { userInput, history, activeWordIndex, handleInput, resetTyping, setHistory, setActiveWordIndex, setUserInput } = useTyping();
+
+  const {
+    timeLeft,
+    startTimer,
+    resetTimer,
+    stopTimer,
+    isActive
+  } = useTimer(timeLimit, () => onTimeUp());
+
+  const {
+    ghostCaretPos,
+    recordPoint,
+    saveRun,
+    resetGhost
+  } = useGhostCaret(isActive, mode);
 
   const onTimeUp = useCallback(() => {
     const stats = calculateSessionResults(words, history, userInput, timeLimit);
     setResults(stats);
+    saveRun(stats.wpm);
     setMode("results");
     setIsTyping(false);
-  }, [words, history, userInput, timeLimit]);
-
-  const { timeLeft, startTimer, resetTimer, stopTimer, isActive } = useTimer(timeLimit, onTimeUp);
+  }, [words, history, userInput, timeLimit, saveRun]);
 
   const activeWordRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const startTimestampRef = useRef<number | null>(null);
-  const recordingBufferRef = useRef<RecordingPoint[]>([]);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const initTest = useCallback((limit: number, sameWords?: string[]) => {
@@ -57,10 +68,10 @@ export default function Home() {
     setMode("typing");
     setContainerOffset(0);
     setIsTyping(false);
-    recordingBufferRef.current = [];
+    resetGhost();
     startTimestampRef.current = null;
     setTimeout(() => textareaRef.current?.focus(), 0);
-  }, [resetTyping, resetTimer]);
+  }, [resetTyping, resetTimer, resetGhost]);
 
   useEffect(() => initTest(timeLimit), [timeLimit, initTest]);
 
@@ -86,8 +97,7 @@ export default function Home() {
       else setContainerOffset(0);
 
       if (isActive) {
-        const elapsed = performance.now() - (startTimestampRef.current || performance.now());
-        recordingBufferRef.current.push({ t: elapsed, x: pos.left, y: pos.top, h: pos.height });
+        recordPoint(pos, activeWordIndex, userInput.length);
       }
     }
   }, [userInput, activeWordIndex, isActive]);
@@ -160,6 +170,7 @@ export default function Home() {
                 className={`flex flex-wrap gap-x-4 gap-y-3 relative transition-all duration-300 ${!isFocused && !isActive ? "blur-sm opacity-50" : ""}`}
               >
                 <Caret position={caretPos} isTyping={isTyping} />
+                <GhostCaret {...ghostCaretPos} />
                 {words.map((w, i) => (
                   <Word
                     key={i}
