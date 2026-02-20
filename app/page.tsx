@@ -151,7 +151,7 @@ export default function Home() {
                 onFocus={() => setIsFocused(true)}
                 onBlur={() => {
                   setIsFocused(false);
-                  stopTimer(); // Pause timer on blur
+                  stopTimer();
                 }}
                 autoFocus
               />
