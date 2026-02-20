@@ -42,3 +42,4 @@ export interface RecordingPoint {
 }
 
 export type Mode = "typing" | "results";
+export type CursorType = "line" | "block" | "box" | "underline";

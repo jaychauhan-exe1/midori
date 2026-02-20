@@ -16,8 +16,19 @@ export const Letter = memo(({ char, typedChar, missed, isCurrentWord }: LetterPr
         }
     }
 
+    const isPrimary = color === "text-primary";
+    const isError = color === "text-red-500" || color === "text-red-500/60";
+    const isSuccess = color === "text-foreground";
+
+    let glowClass = "";
+    if (isPrimary) glowClass = "typing-glow";
+    else if (isError) glowClass = "error-glow";
+    else if (isSuccess) glowClass = "success-glow";
+
     return (
-        <span className={`letter transition-colors duration-75 ${color} ${decoration}`}>
+        <span
+            className={`letter transition-all duration-300 ease-in-out ${color} ${decoration} ${glowClass}`}
+        >
             {char}
         </span>
     );

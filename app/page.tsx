@@ -11,18 +11,24 @@ import { Results } from "@/src/components/typing/Results";
 import { Caret } from "@/src/components/typing/Caret";
 import { GhostCaret } from "@/src/components/typing/GhostCaret";
 import { Timer } from "@/src/components/typing/Timer";
+import { SettingsBar } from "@/src/components/typing/SettingsBar";
+
 
 import { generateWordsList } from "@/src/lib/generateWords";
 import { calculateSessionResults } from "@/src/lib/calculateResults";
 import { getCaretPosition } from "@/src/lib/caretPosition";
 import { getWordCountForLimit } from "@/src/utils/wordHelper";
-import type { TestStats } from "@/src/types/typing";
+import type { TestStats, CursorType } from "@/src/types/typing";
+
 
 export default function Home() {
   const [mode, setMode] = useState<"typing" | "results">("typing");
   const [timeLimit, setTimeLimit] = useState(30);
   const [words, setWords] = useState<string[]>([]);
   const [results, setResults] = useState<TestStats | null>(null);
+  const [cursorType, setCursorType] = useState<CursorType>("line");
+  const [fontSize, setFontSize] = useState(24);
+
 
   const [caretPos, setCaretPos] = useState({ top: 0, left: 0, height: 24 });
   const [containerOffset, setContainerOffset] = useState(0);
@@ -118,25 +124,17 @@ export default function Home() {
   return (
     <main className="flex min-h-screen p-4 max-w-6xl mx-auto font-jetbrains-mono bg-background text-foreground">
       <div className="flex flex-col items-center justify-center w-full gap-8 relative py-8">
-        <div className="flex items-center justify-between w-full max-w-4xl px-4">
-          <h1 className="text-2xl font-black text-primary">midori.ty</h1>
-          {mode === "typing" && (
-            <div className="flex items-center gap-2 bg-foreground/5 p-1 rounded-lg">
-              {[15, 30, 60, 120].map((t) => (
-                <button
-                  key={t}
-                  onClick={() => setTimeLimit(t)}
-                  className={`px-3 py-1 rounded-md text-xs font-bold transition-all ${timeLimit === t
-                    ? "bg-primary text-background"
-                    : "text-foreground/40 hover:text-foreground"
-                    }`}
-                >
-                  {t}s
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
+        {mode === "typing" && (
+          <SettingsBar
+            timeLimit={timeLimit}
+            setTimeLimit={setTimeLimit}
+            cursorType={cursorType}
+            setCursorType={setCursorType}
+            fontSize={fontSize}
+            setFontSize={setFontSize}
+          />
+        )}
+
 
         {mode === "results" && results ? (
           <Results stats={results} onRestart={() => initTest(timeLimit, words)} onNext={() => initTest(timeLimit)} />
@@ -164,11 +162,18 @@ export default function Home() {
                 autoFocus
               />
               <div
-                style={{ transform: `translateY(${containerOffset}px)`, transition: 'transform 0.2s cubic-bezier(0.4, 0, 0.2, 1)' }}
-                className={`flex flex-wrap gap-x-4 gap-y-3 relative transition-all duration-300 ${!isFocused && !isActive ? "blur-sm opacity-50" : ""}`}
+                style={{
+                  transform: `translateY(${containerOffset}px)`,
+                  transition: 'transform 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                  fontSize: `${fontSize}px`,
+                  lineHeight: '1.2'
+                }}
+                className={`flex flex-wrap gap-x-[0.5em] gap-y-[0.2em] relative transition-all duration-300 ${!isFocused && !isActive ? "blur-sm opacity-50" : ""}`}
               >
-                <Caret position={caretPos} isTyping={isTyping} />
+
+                <Caret position={caretPos} isTyping={isTyping} type={cursorType} />
                 <GhostCaret {...ghostCaretPos} />
+
                 {words.map((w, i) => (
                   <Word
                     key={i}
