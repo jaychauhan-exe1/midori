@@ -49,7 +49,8 @@ export default function Home() {
     ghostCaretPos,
     recordPoint,
     saveRun,
-    resetGhost
+    resetGhost,
+    clearLastRecording
   } = useGhostCaret(isActive, mode);
 
   const onTimeUp = useCallback(() => {
@@ -73,11 +74,19 @@ export default function Home() {
     setContainerOffset(0);
     setIsTyping(false);
     resetGhost();
+    if (!sameWords) {
+      clearLastRecording();
+    }
     startTimestampRef.current = null;
     setTimeout(() => textareaRef.current?.focus(), 0);
-  }, [resetTyping, resetTimer, resetGhost]);
+  }, [resetTyping, resetTimer, resetGhost, clearLastRecording]);
 
   useEffect(() => initTest(timeLimit), [timeLimit, initTest]);
+
+  // Reset ghost if font size changes as layout is now different
+  useEffect(() => {
+    clearLastRecording();
+  }, [fontSize, clearLastRecording]);
 
   // Handle backspace between words
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -97,14 +106,19 @@ export default function Home() {
       setCaretPos(pos);
 
       const top = activeWordRef.current.offsetTop;
-      if (top >= 52 * 2) setContainerOffset(-(top - 52));
-      else setContainerOffset(0);
+      const fullLineHeight = fontSize * 1.4; // 1.2 lineHeight + 0.2 gap
+
+      if (top >= fullLineHeight * 2) {
+        setContainerOffset(-(top - fullLineHeight));
+      } else {
+        setContainerOffset(0);
+      }
 
       if (isActive) {
         recordPoint(pos, activeWordIndex, userInput.length);
       }
     }
-  }, [userInput, activeWordIndex, isActive]);
+  }, [userInput, activeWordIndex, isActive, fontSize, recordPoint]);
 
   useEffect(() => {
     // Small delay ensures the DOM has updated refs
@@ -141,7 +155,11 @@ export default function Home() {
         ) : (
           <div className="w-full flex flex-col items-center gap-6">
             <Timer timeLeft={timeLeft} />
-            <div className="relative w-full h-[140px] overflow-hidden" onClick={() => textareaRef.current?.focus()}>
+            <div
+              className="relative w-full overflow-hidden"
+              style={{ height: `${fontSize * 4}px` }}
+              onClick={() => textareaRef.current?.focus()}
+            >
               <textarea
                 ref={textareaRef}
                 className="absolute opacity-0 pointer-events-none"
