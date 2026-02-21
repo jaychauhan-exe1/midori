@@ -60,6 +60,11 @@ export function useGhostCaret(isActive: boolean, mode: "typing" | "results") {
     }
   }, []);
 
+  const clearLastRecording = useCallback(() => {
+    setLastRecording([]);
+    bestWpmRef.current = 0;
+  }, []);
+
   // Ghost Playback Loop
   useEffect(() => {
     if (!isActive || lastRecording.length === 0 || mode !== "typing") {
@@ -90,5 +95,6 @@ export function useGhostCaret(isActive: boolean, mode: "typing" | "results") {
     recordPoint,
     saveRun,
     resetGhost,
+    clearLastRecording,
   };
 }
